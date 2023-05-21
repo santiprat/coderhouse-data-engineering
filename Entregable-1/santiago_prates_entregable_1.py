@@ -70,7 +70,7 @@ SEASON_AVERAGES_PLAYERS_IDS = [274, 2198, 473, 334, 319, 363, 2206, 159, 6, 184,
 REDSHIFT_HOST = 'data-engineer-cluster.cyhh5bfevlmn.us-east-1.redshift.amazonaws.com'
 # SUSTITUIR POR LAS CREDENCIALES CORRESPONDIENTES, MI CASO ES EL QUE RECIBI CREDENCIALES ERRONEAS
 DB_HOST = 'localhost'
-DB_PORT = '5432'
+DB_PORT = '5439'
 DB_DATA_BASE = 'data-engineer-database'
 DB_TABLE_NAME = 'average_player_season_stats'
 DB_USER = 'santi_prates7_coderhouse'
@@ -121,7 +121,7 @@ class SeasonAverages:
             
             try:
                 conn = psycopg2.connect(
-                    host = DB_HOST,
+                    host = REDSHIFT_HOST,
                     dbname = DB_DATA_BASE,
                     user = DB_USER,
                     password = PWD,
