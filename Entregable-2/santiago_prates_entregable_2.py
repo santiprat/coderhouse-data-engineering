@@ -5,14 +5,18 @@ DATA ENGINEERING (FLEX) 2023
 
 AUTOR: Santiago Prates
 
-FECHA LIMITE DEL ENTREGABLE: 16/05/2023 23:59
+FECHA LIMITE DEL ENTREGABLE: 30/05/2023 23:59
 
-CONSIGNA: Desarrollar un script que extraiga datos de una API pública. 
-          A su vez, el alumno debe crear una tabla en Redshift para posterior 
-          carga de los datos extraidos.
+CONSIGNA: El script de la pre-entrega anterior deberá adaptar datos leídos de la API 
+          y los deberá cargar en la tabla creada en la pre-entrega anterior en Redshift.
 
 FORMATO: Código en Python subido ya sea en repositorio de GitHub o en Google Drive.
          Y tabla creada en Redshift.
+
+OBJETIVOS: El objetivo de esta pre-entrega es que alumno implemente funcionalidades de la librería Pandas en
+           el código de la pre-entrega anterior y pueda cargarlos en la tabla creada en la misma. A su vez, que
+           el alumno piense en una situación real de ETL donde puedan llegar a aparecer duplicados durante la
+           ingesta de los datos y cómo solucionarlo.
 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
