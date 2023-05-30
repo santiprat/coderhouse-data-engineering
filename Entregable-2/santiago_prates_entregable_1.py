@@ -49,9 +49,9 @@ BASE_API_URL = 'https://www.balldontlie.io'
 SEASON_AVERAGES_PATH = '/api/v1/season_averages'
 SEASON_AVERAGES_COLUMNS_TO_KEEP = ['player_id', 'games_played', 'season', 'min', 'ftm', 'fgm', 'fg3m', 'dreb', 'oreb', 'ast', 'pf']
 SEASON_AVERAGES_COLUMNS_RENAME = {
+    'season': 'Temporada',
     'player_id' : 'PlayerID',
     'games_played': 'PartidosJugados',
-    'season': 'Temporada',
     'min': 'MinutosPromedio', 
     'ftm': 'Libres',
     'fgm': 'Dobles',
@@ -63,7 +63,7 @@ SEASON_AVERAGES_COLUMNS_RENAME = {
 
 }
 
-SEASON_AVERAGES_YEAR = 2017
+SEASON_AVERAGES_YEAR = [2015, 2016, 2017]
 SEASON_AVERAGES_PLAYERS_IDS = [274, 2198, 473, 334, 319, 363, 2206, 159, 6, 184, 1412, 171, 44, 170, 2118] 
 
 
@@ -108,6 +108,7 @@ class SeasonAverages:
 
                 data_frame_filtered = data_frame.loc[:, SEASON_AVERAGES_COLUMNS_TO_KEEP]
                 data_frame_filtered.rename(columns=SEASON_AVERAGES_COLUMNS_RENAME, inplace=True)
+                # Remover duplicados en data_frame
                 data_frame_filtered = data_frame_filtered.drop_duplicates()
 
                 return data_frame_filtered
@@ -122,7 +123,7 @@ class SeasonAverages:
             
             try:
                 conn = psycopg2.connect(
-                    host = REDSHIFT_HOST,
+                    host = DB_HOST,
                     dbname = DB_DATA_BASE,
                     user = DB_USER,
                     password = PWD,
@@ -143,12 +144,12 @@ class SeasonAverages:
 
             # Crear la tabla si no existe
             cur = conn.cursor()
-            cur.execute(f"CREATE TABLE IF NOT EXISTS {REDSHIFT_SCHEMA_NAME}.{table_name} ({', '.join(column_defs)});")
+            cur.execute(f"CREATE TABLE IF NOT EXISTS {REDSHIFT_SCHEMA_NAME}.{table_name} ({', '.join(column_defs)}, PRIMARY KEY (PlayerID, Temporada));")
 
             # Generar los valores a insertar
             values = [tuple(x) for x in data_frame.to_numpy()]
 
-            # Definir INSERT y CONTROLAR DUPLICADOS
+            # Definir INSERT y CONTROLAR DUPLICADOS al insertar
             insert_sql = f"INSERT INTO {REDSHIFT_SCHEMA_NAME}.{table_name} ({', '.join(data_frame.columns)}) VALUES %s " \
                          f"ON CONFLICT DO NOTHING"
 
@@ -160,22 +161,22 @@ class SeasonAverages:
         except Exception as exc:
             print(f"ERROR: {exc}")
 
+for year in SEASON_AVERAGES_YEAR:
+    season_avg_instance = SeasonAverages( year, SEASON_AVERAGES_PLAYERS_IDS )
+    season_averages = season_avg_instance.get_season_averages()
 
-season_avg_instance = SeasonAverages( SEASON_AVERAGES_YEAR, SEASON_AVERAGES_PLAYERS_IDS )
-season_averages = season_avg_instance.get_season_averages()
-
-if season_averages is not None:
-    print("SEASON AVERAGES RETRIEVED SUCCESFULLY.")
-    # Procesar los datos obtenidos de la API
-    processed_data = season_avg_instance.process_data( season_averages )
-    if processed_data is not None:
-        print("DATA PROCESSED SUCCESSFULLY.")
-        # Conectar a la base de datos y enviar los datos procesados
-        conn = season_avg_instance.db_connect()
-        if conn:
-            print("CONNECTED TO THE DATABASE SUCCESSFULLY.")
-            season_avg_instance.send_data_to_server(conn, processed_data)
+    if season_averages is not None:
+        print("SEASON AVERAGES RETRIEVED SUCCESFULLY.")
+        # Procesar los datos obtenidos de la API
+        processed_data = season_avg_instance.process_data( season_averages )
+        if processed_data is not None:
+            print("DATA PROCESSED SUCCESSFULLY.")
+            # Conectar a la base de datos y enviar los datos procesados
+            conn = season_avg_instance.db_connect()
+            if conn:
+                print("CONNECTED TO THE DATABASE SUCCESSFULLY.")
+                season_avg_instance.send_data_to_server(conn, processed_data)
+        else:
+            print("ERROR PROCESSING DATA.")
     else:
-        print("ERROR PROCESSING DATA.")
-else:
-    print("ERROR RETRIEVING SEASON AVERAGES.")
+        print("ERROR RETRIEVING SEASON AVERAGES.")
