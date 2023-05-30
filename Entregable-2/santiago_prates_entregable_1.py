@@ -137,7 +137,7 @@ class SeasonAverages:
                 f.close()
     
     # Funcion para enviar datos a la base de datos
-    def send_data_to_server (self, conn, data_frame, table_name=DB_TABLE_NAME):
+    def send_data_to_server (self, conn, data_frame, season, table_name=DB_TABLE_NAME):
         try:
             # Definir formato SQL VARIABLE TIPO_DATO
             column_defs = [f"{name} {TYPE_MAP[str(dtype)]}" for name, dtype in zip(data_frame.columns, data_frame.dtypes)]
@@ -157,7 +157,7 @@ class SeasonAverages:
             cur.execute("BEGIN")
             execute_values(cur, insert_sql, values)
             cur.execute("COMMIT")
-            print('PROCESS FINISHED')
+            print(f'PROCESS FINISHED FOR SEASON {season}')
         except Exception as exc:
             print(f"ERROR: {exc}")
 
@@ -175,7 +175,7 @@ for year in SEASON_AVERAGES_YEAR:
             conn = season_avg_instance.db_connect()
             if conn:
                 print("CONNECTED TO THE DATABASE SUCCESSFULLY.")
-                season_avg_instance.send_data_to_server(conn, processed_data)
+                season_avg_instance.send_data_to_server(conn, processed_data, year)
         else:
             print("ERROR PROCESSING DATA.")
     else:
