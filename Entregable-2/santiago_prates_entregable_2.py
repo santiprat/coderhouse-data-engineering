@@ -51,7 +51,7 @@ from psycopg2.extras import execute_values
 BASE_API_URL = 'https://www.balldontlie.io'
 
 SEASON_AVERAGES_PATH = '/api/v1/season_averages'
-SEASON_AVERAGES_COLUMNS_TO_KEEP = ['player_id', 'games_played', 'season', 'min', 'ftm', 'fgm', 'fg3m', 'dreb', 'oreb', 'ast', 'pf']
+SEASON_AVERAGES_COLUMNS_TO_KEEP = ['season', 'player_id', 'games_played', 'min', 'ftm', 'fgm', 'fg3m', 'dreb', 'oreb', 'ast', 'pf']
 SEASON_AVERAGES_COLUMNS_RENAME = {
     'season': 'Temporada',
     'player_id' : 'PlayerID',
@@ -72,7 +72,7 @@ SEASON_AVERAGES_PLAYERS_IDS = [274, 2198, 473, 334, 319, 363, 2206, 159, 6, 184,
 
 
 REDSHIFT_HOST = 'data-engineer-cluster.cyhh5bfevlmn.us-east-1.redshift.amazonaws.com'
-REDSHIFT_SCHEMA_NAME = 'santiago_prates_coderhouse'
+REDSHIFT_SCHEMA_NAME = 'santi_prates7_coderhouse'
 
 DB_HOST = 'localhost'
 DB_PORT = '5439'
@@ -127,7 +127,7 @@ class SeasonAverages:
             
             try:
                 conn = psycopg2.connect(
-                    host = DB_HOST,
+                    host = REDSHIFT_HOST,
                     dbname = DB_DATA_BASE,
                     user = DB_USER,
                     password = PWD,
@@ -153,9 +153,9 @@ class SeasonAverages:
             # Generar los valores a insertar
             values = [tuple(x) for x in data_frame.to_numpy()]
 
-            # Definir INSERT y CONTROLAR DUPLICADOS al insertar
-            insert_sql = f"INSERT INTO {REDSHIFT_SCHEMA_NAME}.{table_name} ({', '.join(data_frame.columns)}) VALUES %s " \
-                         f"ON CONFLICT DO NOTHING"
+            # Definir INSERT
+            insert_sql = f"INSERT INTO {REDSHIFT_SCHEMA_NAME}.{table_name} ({', '.join(data_frame.columns)}) VALUES %s"
+                         
 
             # Ejecutar la transacción para insertar los datos
             cur.execute("BEGIN")
