@@ -12,13 +12,13 @@ services:
   postgres:
     image: postgres:13
     environment:
-      - POSTGRES_USER=airflow
-      - POSTGRES_PASSWORD=airflow
-      - POSTGRES_DB=airflow
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
     volumes: 
       - postgres-db-volume:/var/lib/postgresql/data
     ports:
-      - 5432:5432
+      - "5432:5432"
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "airflow"]
       interval: 5s
@@ -26,8 +26,9 @@ services:
     restart: always
   airflow:
     image: apache/airflow:latest
+    command: bash -c 'airflow db init && airflow users create --username airflow --firstname airflow --lastname airflow --email airflow@airflow --role Admin --password airflow && airflow scheduler && airflow webserver -p 8793'
     ports:
-      - 8080:8080
+      - "8081:8793"
     environment:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
@@ -36,11 +37,18 @@ services:
       AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
       AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
       AIRFLOW__SCHEDULER__MIN_FILE_PROCESS_INTERVAL: 10
+      AIRFLOW__WEBSERVER__WORKERS: 1
+      AIRFLOW__WEBSERVER__TIMEOUT: 300
+      AIRFLOW__WEBSERVER__WORKER_REFRESH_BATCH_SIZE: 0
+      AIRFLOW__WEBSERVER__WORKER_REFRESH_INTERVAL: 0
+      AIRFLOW__WEBSERVER__WEB_SERVER_MASTER_TIMEOUT: 300
     volumes:
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
     - ./plugins:/opt/airflow/plugins
     user: "${AIRFLOW_UID:-50000}:${AIRFLOW_GID:-50000}"
+    cpus: 2.5  # Aumentar la asignación de CPU
+    mem_limit: 2g  # Aumentar el límite de memoria
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
       interval: 10s
