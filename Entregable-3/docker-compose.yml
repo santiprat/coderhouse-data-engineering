@@ -9,6 +9,7 @@ services:
     depends_on:
       - airflow
       - postgres
+    restart: 'no'
   postgres:
     image: postgres:13
     environment:
@@ -23,12 +24,12 @@ services:
       test: ["CMD", "pg_isready", "-U", "airflow"]
       interval: 5s
       retries: 5
-    restart: always
+    restart: 'always'
   airflow:
     image: apache/airflow:latest
-    command: bash -c 'airflow db init && airflow users create --username airflow --firstname airflow --lastname airflow --email airflow@airflow --role Admin --password airflow && airflow scheduler && airflow webserver -p 8793'
+    command: bash -c 'airflow db init && airflow users create --username airflow --firstname airflow --lastname airflow --email airflow@airflow --role Admin --password airflow && airflow scheduler'
     ports:
-      - "8081:8793"
+      - "8081:8081"
     environment:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
@@ -54,7 +55,7 @@ services:
       interval: 10s
       timeout: 10s
       retries: 5
-    restart: always
+    restart: 'always'
     depends_on:
       postgres:
         condition: service_healthy
